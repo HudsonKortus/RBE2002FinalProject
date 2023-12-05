@@ -38,9 +38,7 @@ void Odometry::UpdateOdometry() //target speed in mm/s
                 (R_measured * cos(theta_calculated + (w_measured * timeIncrement)));
             
             theta_calculated += w_measured * timeIncrement;
-            
-            
-            
+            /*
             // Serial.print(R_theoretical);
             // Serial.print(" ");
             // Serial.print(w_theoretical);
@@ -50,7 +48,7 @@ void Odometry::UpdateOdometry() //target speed in mm/s
             // Serial.print(measured_speed_right);
             // Serial.print(" ");
             // Serial.println(measured_speed_left);
-
+*/
 
         } else {
             //straight movement

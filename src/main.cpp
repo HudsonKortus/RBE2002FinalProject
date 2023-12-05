@@ -6,6 +6,7 @@
 Encoder magneticEncoder;
 SpeedController robot;
 Odometry odometry;
+Romi32U4ButtonB buttonB;
 
 //this is a test can you see what I am typing
 
@@ -20,21 +21,60 @@ void setup() {
 
 float yPrevious = 0;
 float targetYposition;
-
- enum ROBOT_STATE {IDLE, DRIVE};
-        ROBOT_STATE robot_state = IDLE; //initial state: IDLE
+enum ROBOT_STATE {IDLE, DRIVE};
+    ROBOT_STATE robot_state = IDLE; //initial state: IDLE
 
 void loop() {
     if(magneticEncoder.UpdateEncoderCounts()){
         odometry.UpdateOdometry();
-        robot.PositionController(100, 70, odometry.getX(), odometry.getY());
-        // float ySpeed = odometry.calculateFigureight(odometry.getX(), 20);
-        // robot.Run(50, ySpeed);
-        // Serial.println(ySpeed);
-        delay(100);
 
-    
-    
-    }
+        switch (robot_state) {
+            case IDLE:
+                if(buttonB.getSingleDebouncedRelease()){ 
+                    robot_state = DRIVE; 
+                    robot.Stop();             
+                } 
+                else { 
+                    robot_state = IDLE;
+                    robot.Stop(); 
+                }   
+                break;
+            
+            case DRIVE:
+                
+                //assignment
+                Serial.println("drive");
+                //robot.PositionController(500, 0, odometry.getX(), odometry.getY());
+                robot.Straight(50,5);
+                // float ySpeed = odometry.calculateFigureight(odometry.getX(), 20);
+                // robot.Run(50, ySpeed);
+                // Serial.println(ySpeed);
+
+
+/*
+                // //robot.Straight(25,10); //velocity, duration
+                // // Serial.println("!!!!!!!!!!!!");
+                // //robot.Turn(180,0); //degrees, direction
+                // // Serial.println("!!!!!!!!!!!!");
+                // //robot.Straight(25,10);
+                // // robot.Curved(95.75,155.58,30); //velocity left, velocity right, duration
+                // // robot.Curved(155.58,95.75,30);
+                // robot.Curved(47.87 * a,77.79 * a, 30 / a); //velocity left, velocity right, duration
+                // robot.Curved(77.79 * a,47.87 * a, 30 / a);
+                // // Serial.println("!!!!!!!!!!!!");
+                // //robot.Curved();
+*/   
+                if(buttonB.getSingleDebouncedPress()){
+                    robot_state = IDLE;
+                    robot.Stop(); 
+                } 
+                else {
+                    robot_state = DRIVE;
+                }
+                break;
+            }
+
+            
+            }
 
 }
