@@ -1,15 +1,15 @@
-#ifndef COORDINATE
-#define COORDINATE
+// #ifndef COORDINATE
+// #define COORDINATE
 
-#include <Romi32U4.h>
+// #include <Romi32U4.h>
 
-class Coordinate{
-    private:
-    public:
-        void Init(float, float);
-        float getX(void);
-        float getY(void);
+// class Coordinate{
+//     private:
+//     public:
+//         void Init(float, float);
+//         float getX(void);
+//         float getY(void);
 
-};
+// };
 
-#endif
+// #endif

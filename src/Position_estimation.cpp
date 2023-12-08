@@ -14,6 +14,8 @@ void Position::Init(void)
     x = 0;
     y = 0;
     theta = 0;
+    waypoint[0][0] = 0;
+    waypoiontCounter = 1;
 }
 
 void Position::Stop(void)
@@ -41,7 +43,7 @@ float Position::getTheta()
 
 float Position::getThetaDeg()
 {
-    return theta;
+    return theta*(180/PI);
 }
 
 
@@ -64,31 +66,10 @@ void Position::PrintPose(void)
 
 void Position::UpdatePose(float measured_speed_left, float measured_speed_right) //target speed in mm/s
 {
-    //Serial.println(millis() - time_prev);
         time_prev = millis();
-        //assignment
-   
-        // if(theoretical_speed_right != theoretical_speed_left 
-        //     && abs(measured_speed_right - measured_speed_left) > .1 ) {
-            //curved movement
          if(abs(measured_speed_right - measured_speed_left) > .25 ) {
             Serial.println("Curved");
-
-            // //target calculations
-            // float R_theoretical = (l/2)*((theoretical_speed_right + theoretical_speed_left) 
-            //     / (theoretical_speed_right - theoretical_speed_left));
-            // float w_theoretical = (theoretical_speed_right - theoretical_speed_left) / l;
-            
-
-            // x_theoretical = x_theoretical + ((-R_theoretical * sin(theta_theoretical)) + 
-            //     (R_theoretical * sin((theta_theoretical + (w_theoretical * timeIncrement)))));
-            
-            // y_theoretical += (R_theoretical * cos(theta_theoretical)) - 
-            //     (R_theoretical * cos(theta_theoretical + (w_theoretical * timeIncrement)));
-
-            // theta_theoretical += (w_theoretical * timeIncrement);
-
-            //measured calculations
+           //measured calculations
             float R_measured = (l/2)*((measured_speed_right + measured_speed_left) 
                 / (measured_speed_right - measured_speed_left));
             float w_measured = (measured_speed_right - measured_speed_left) / l;
@@ -106,20 +87,56 @@ void Position::UpdatePose(float measured_speed_left, float measured_speed_right)
             //straight movement
             Serial.println("Straight");
 
-            // //target calculations
-            // float V_theoretical = (theoretical_speed_left + theoretical_speed_right)/2;
-            // x_theoretical += V_theoretical * cos(theta_theoretical) * timeIncrement; //50ms is the set time update
-            // y_theoretical += V_theoretical * sin(theta_theoretical) * timeIncrement;
-            // //theta stays the same
-            
             //measured calculations
             float V_calculated = (measured_speed_left + measured_speed_right)/2;
             x_calculated += V_calculated * cos(theta_calculated) * timeIncrement; //50ms is the set time update
             y_calculated += V_calculated * sin(theta_calculated) * timeIncrement;
             
         }
+
+        if(theta_calculated > 2*PI){
+            theta_calculated -= 2*PI;
+        }
         x = x_calculated;
         y = y_calculated;
         theta = theta_calculated;
         PrintPose();
+}
+
+//untested
+void Position::restOdomytry(){
+    float heading = getThetaDeg();
+    
+    Serial.print("heading");
+
+    Serial.println(heading);
+    //0 degree case
+    if (heading > 345 || heading < 15){
+        Serial.print("0 degree case");
+    }
+    //90 degree case
+    else if (heading > 75 && heading < 105){
+        Serial.print("90 degree case");
+    }
+    // 180 degree case
+    else if (heading > 165 && heading < 195){
+        Serial.print("180 degree case");
+    }
+    //270 degree case
+    else if (heading > 255 && heading < 285){
+        Serial.print("270 degree case");
+    }
+    else{
+        Serial.print("error");
+    }
+
+
+  //always orent the robot with x facing x+
+//increment world waypoint counter
+// if we are at 0, increment x by 1
+// if we are at 90, increment y by 1
+//if we are at 180, decrement x by 1
+//if we are at 270, decrement y by 1 
+//assume x and y unit are equivelent to 40cm -> 400mm
+  //if(robot.getTheta())
 }
