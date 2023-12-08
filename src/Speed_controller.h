@@ -2,8 +2,12 @@
 #define SPEED_CONTROLLER
 
 #include <Romi32U4.h>
+#include <Position_estimation.h>
+#include <vector>
+using namespace std;
 
-class SpeedController{
+class SpeedController: public Position
+{
     private:
         const float Kp = 0.5; //Adapt the parameters until your robot moves at the speed you command it to drive
         const float Ki = 0.2; 
@@ -18,6 +22,9 @@ class SpeedController{
         boolean Straight(int, int); //speed, duration
         boolean Curved(int,int,int); //speed left, speed right, duration
         void Stop(void);
+        void setEfforts(int, int);
+
+        vector<vector<float>> waypoints;
 };
 
 #endif
