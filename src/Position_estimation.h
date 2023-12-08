@@ -28,6 +28,9 @@ class Position{
         float getTheta();
         void PrintPose(void);
         void Stop(void);
+        void makeWaypoint(void);
+        void cleanMapFirst(void);
+        void cleanMapSecond(void);
 };
 
 #endif

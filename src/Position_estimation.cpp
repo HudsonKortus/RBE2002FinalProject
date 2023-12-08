@@ -1,11 +1,23 @@
 #include  "Position_estimation.h"
 #include "Encoders.h"
 
+/**
+    Arrays of x and y, when there are coordinates smooshed between others we will set those in between ones to the outside ones
+    {1,2},{1,3},{1,2} means that {1,3} is a dead end, so we will change this to {1,2},{1,2},{1,2}
+*/
 Encoder RomiEncoders;
 
 unsigned long time_prev = 0;
 unsigned long time_now = millis();
 float timeIncrement = 0.050;
+int coordinateListSize = 27, currentCoordinate = 0;
+bool second = false;
+
+//Based on how things are run right now, we can go up to 54 coordinates
+struct coordinates{
+    float xCoords[coordinateListSize];
+    float yCoords[coordinateListSize];
+}
 
 void Position::Init(void)
 {
@@ -13,6 +25,58 @@ void Position::Init(void)
     x = 0;
     y = 0;
     theta = 0;
+    coordinates firstSet;
+}
+void Position::makeWaypoint(void){
+    if(currentCoordinate < 27){
+        firstSet.xCoords[currentCoordinate] = x;
+        firstSet.yCoords[currentCoordinate] = y;
+        currentCoordinate++;
+    }else if(coordinateListSize == 27){
+        coordinateListSize *= 2;
+        coordinates secondSet;
+        for(int i = 0; i <= 26; i++){
+            secondSet.xCoords[i] = firstSet.xCoords[i];
+            secondSet.yCoords[i] = firstSet.yCoords[i];
+        }
+        second = true;
+    }else{
+        secondSet.xCoords[currentCoordinate] = x;
+        secondSet.yCoords[currentCoordinate] = y;
+        currentCoordinate++;
+    }
+}
+void Position::cleanMapFirst(void){
+    //Find where coordinates are sandwiched between identical coordinates
+        //find identical coordinates that are not next to eachother
+        //replace the coordinates in between them with that coordinate (this is easier than deleting and redoing the map)
+    for(int i = 0; i < --currentCoordinate; i++){
+        for(int j = ++i; j < currentCoordinate; j++){
+            //Check for bread of sandwich
+            if(firstSet.xCoords[i] == firstSet.xCoords[j] && firstSet.yCoords[i] == firstSet.yCoords[j]){
+                for(int a = i; a < j; a++){
+                    firstSet.xCoords[a] = firstSet.xCoords[i];
+                    firstSet.yCoords[a] = firstSet.yCoords[i];
+                }
+            }
+        }
+    }
+}
+void Position::cleanMapSecond(void){
+    //Find where coordinates are sandwiched between identical coordinates
+        //find identical coordinates that are not next to eachother
+        //replace the coordinates in between them with that coordinate (this is easier than deleting and redoing the map)
+    for(int i = 0; i < --currentCoordinate; i++){
+        for(int j = ++i; j < currentCoordinate; j++){
+            //Check for bread of sandwich
+            if(secondSet.xCoords[i] == secondSet.xCoords[j] && secondSet.yCoords[i] == secondSet.yCoords[j]){
+                for(int a = i; a < j; a++){
+                    secondSet.xCoords[a] = secondSet.xCoords[i];
+                    secondSet.yCoords[a] = secondSet.yCoords[i];
+                }
+            }
+        }
+    }
 }
 
 void Position::Stop(void)
