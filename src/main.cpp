@@ -2,6 +2,7 @@
 //#include "Behaviors.h"
 #include "Speed_controller.h"
 #include <Rangefinder.h>
+#include "Apriltags.h"
 
 
 //Behaviors positionEstimation;
@@ -24,10 +25,23 @@ const float VTC_TO_CENTER = 100;//mm
 Rangefinder rangefinder(17, 30);
 const float TOO_CLOSE = 9; //cm
 
+//For apriltags:
+AprilTags ap_finder;
+
 void setup() {
   //positionEstimation.Init();
   //robot.Init();
   rangefinder.init();
+  ap_finder.Init();
+}
+
+//for verifying correct april tag:
+//input the id you want it to be.
+bool correct_tag(int id) {
+  if(ap_finder.FindAPs() == id) {
+    return true;
+  }
+  return false;
 }
 
 void lineFollow() // line follow function
