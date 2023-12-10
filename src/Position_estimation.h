@@ -36,6 +36,10 @@ class Position : public Encoder
         float getThetaDeg(void);
         void PrintPose(void);
         void Stop(void);
+        void makeWaypoint(void);
+        void cleanMapFirst(void);
+        void cleanMapSecond(void);
+
         void makeWaypoint();
         void restOdomytry(void);
 };
