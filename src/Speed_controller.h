@@ -3,8 +3,6 @@
 
 #include <Romi32U4.h>
 #include <Position_estimation.h>
-#include <vector>
-using namespace std;
 
 class SpeedController: public Position
 {
@@ -24,7 +22,6 @@ class SpeedController: public Position
         void Stop(void);
         void setEfforts(int, int);
 
-        vector<vector<float>> waypoints;
 };
 
 #endif
