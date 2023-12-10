@@ -7,6 +7,10 @@
 */
 Encoder RomiEncoders;
 
+/*
+    Use arrays for x and y, then repeat the last real coordinate when we delete dead ends. Double the size of the array when it 
+    gets too big
+*/
 unsigned long time_prev = 0;
 unsigned long time_now = millis();
 float timeIncrement = 0.050;
@@ -102,6 +106,12 @@ float Position::getTheta()
     return theta;
 }
 
+float Position::getThetaDeg()
+{
+    return theta;
+}
+
+
 void Position::PrintPose(void)
 {
     Serial.print(x);
@@ -110,40 +120,40 @@ void Position::PrintPose(void)
     Serial.print("  ");
     Serial.print(theta);
     Serial.print(" ");
-    Serial.print("|");
-    Serial.print(" ");
-    Serial.print(x_theoretical);
-    Serial.print("  ");
-    Serial.print(y_theoretical);
-    Serial.print("  ");
-    Serial.println(theta_theoretical);
+//     Serial.print("|");
+//     Serial.print(" ");
+//     Serial.print(x_theoretical);
+//     Serial.print("  ");
+//     Serial.print(y_theoretical);
+//     Serial.print("  ");
+//     Serial.println(theta_theoretical);
 }
 
-void Position::UpdatePose(float measured_speed_left, float measured_speed_right, 
-    float theoretical_speed_left, float theoretical_speed_right) //target speed in mm/s
+void Position::UpdatePose(float measured_speed_left, float measured_speed_right) //target speed in mm/s
 {
     //Serial.println(millis() - time_prev);
         time_prev = millis();
         //assignment
    
-        if(theoretical_speed_right != theoretical_speed_left 
-            && abs(measured_speed_right - measured_speed_left) > .1 ) {
+        // if(theoretical_speed_right != theoretical_speed_left 
+        //     && abs(measured_speed_right - measured_speed_left) > .1 ) {
             //curved movement
-            //Serial.println("Curved");
+         if(abs(measured_speed_right - measured_speed_left) > .25 ) {
+            Serial.println("Curved");
 
-            //target calculations
-            float R_theoretical = (l/2)*((theoretical_speed_right + theoretical_speed_left) 
-                / (theoretical_speed_right - theoretical_speed_left));
-            float w_theoretical = (theoretical_speed_right - theoretical_speed_left) / l;
+            // //target calculations
+            // float R_theoretical = (l/2)*((theoretical_speed_right + theoretical_speed_left) 
+            //     / (theoretical_speed_right - theoretical_speed_left));
+            // float w_theoretical = (theoretical_speed_right - theoretical_speed_left) / l;
             
 
-            x_theoretical = x_theoretical + ((-R_theoretical * sin(theta_theoretical)) + 
-                (R_theoretical * sin((theta_theoretical + (w_theoretical * timeIncrement)))));
+            // x_theoretical = x_theoretical + ((-R_theoretical * sin(theta_theoretical)) + 
+            //     (R_theoretical * sin((theta_theoretical + (w_theoretical * timeIncrement)))));
             
-            y_theoretical += (R_theoretical * cos(theta_theoretical)) - 
-                (R_theoretical * cos(theta_theoretical + (w_theoretical * timeIncrement)));
+            // y_theoretical += (R_theoretical * cos(theta_theoretical)) - 
+            //     (R_theoretical * cos(theta_theoretical + (w_theoretical * timeIncrement)));
 
-            theta_theoretical += (w_theoretical * timeIncrement);
+            // theta_theoretical += (w_theoretical * timeIncrement);
 
             //measured calculations
             float R_measured = (l/2)*((measured_speed_right + measured_speed_left) 
@@ -161,13 +171,13 @@ void Position::UpdatePose(float measured_speed_left, float measured_speed_right,
 
         } else {
             //straight movement
-            //Serial.println("Straight");
+            Serial.println("Straight");
 
-            //target calculations
-            float V_theoretical = (theoretical_speed_left + theoretical_speed_right)/2;
-            x_theoretical += V_theoretical * cos(theta_theoretical) * timeIncrement; //50ms is the set time update
-            y_theoretical += V_theoretical * sin(theta_theoretical) * timeIncrement;
-            //theta stays the same
+            // //target calculations
+            // float V_theoretical = (theoretical_speed_left + theoretical_speed_right)/2;
+            // x_theoretical += V_theoretical * cos(theta_theoretical) * timeIncrement; //50ms is the set time update
+            // y_theoretical += V_theoretical * sin(theta_theoretical) * timeIncrement;
+            // //theta stays the same
             
             //measured calculations
             float V_calculated = (measured_speed_left + measured_speed_right)/2;
@@ -178,5 +188,5 @@ void Position::UpdatePose(float measured_speed_left, float measured_speed_right,
         x = x_calculated;
         y = y_calculated;
         theta = theta_calculated;
-        //PrintPose();
+        PrintPose();
 }

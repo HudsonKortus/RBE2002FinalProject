@@ -2,8 +2,11 @@
 #define POSITION_ESTIMATION
 
 #include <Romi32U4.h>
+#include <Encoders.h>
 
-class Position{
+class Position : public Encoder
+
+{
     private:
         float x_calculated =0, y_calculated=0, 
         theta_calculated=0, x_theoretical=0, y_theoretical=0, 
@@ -16,21 +19,25 @@ class Position{
         float theta = 0;
 
     public:
-        // struct pose_data {
-        //     float X;
-        //     float Y;
-        //     float THETA;
-        // };
+        struct pose_data {
+            float X;
+            float Y;
+            float THETA;
+        };
         void Init(void);
-        void UpdatePose(float,float,float,float);
+        void UpdatePose(float,float);
+        //void UpdatePose(float,float,float,float);
         float getX();
         float getY();
         float getTheta();
+        float getThetaDeg();
         void PrintPose(void);
         void Stop(void);
         void makeWaypoint(void);
         void cleanMapFirst(void);
         void cleanMapSecond(void);
+
+        void makeWaypoint();
 };
 
 #endif

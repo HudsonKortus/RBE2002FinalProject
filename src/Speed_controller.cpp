@@ -13,10 +13,13 @@ void SpeedController::Init(void)
     MagneticEncoder.Init();
     odometry.Init();
 }
+void SpeedController::setEfforts(int left, int right)
+{
+    motors.setEfforts(left, right);
+}
 
 void SpeedController::Run(float target_velocity_left, float target_velocity_right)
 {
-    if(MagneticEncoder.UpdateEncoderCounts()){
         float e_left = target_velocity_left - MagneticEncoder.ReadVelocityLeft();
         float e_right = target_velocity_right - MagneticEncoder.ReadVelocityRight();
 
@@ -27,9 +30,8 @@ void SpeedController::Run(float target_velocity_left, float target_velocity_righ
         float u_right = Kp*e_right + Ki*E_right;
 
         motors.setEfforts(u_left,u_right);
-        odometry.UpdatePose(MagneticEncoder.ReadVelocityLeft(), MagneticEncoder.ReadVelocityRight(), 
-            target_velocity_left, target_velocity_right); //this is where your newly programmed function is/will be called
-    }
+        odometry.UpdatePose(MagneticEncoder.ReadVelocityLeft(), 
+            MagneticEncoder.ReadVelocityRight()); //this is where your newly programmed function is/will be called
 }
 
 boolean SpeedController::Turn(int degree, int direction)
