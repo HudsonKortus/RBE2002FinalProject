@@ -14,14 +14,16 @@ Encoder RomiEncoders;
 unsigned long time_prev = 0;
 unsigned long time_now = millis();
 float timeIncrement = 0.050;
-int coordinateListSize = 27, currentCoordinate = 0;
+const int coordinateListSize = 27;
+int currentCoordinate = 0;
 bool second = false;
 
 //Based on how things are run right now, we can go up to 54 coordinates
 struct coordinates{
     float xCoords[coordinateListSize];
     float yCoords[coordinateListSize];
-}
+};
+coordinates firstSet;
 
 void Position::Init(void)
 {
@@ -30,7 +32,7 @@ void Position::Init(void)
     y = 0;
     theta = 0;
 
-    coordinates firstSet;
+
 }
 void Position::makeWaypoint(void){
     if(currentCoordinate < 27){
@@ -51,6 +53,7 @@ void Position::makeWaypoint(void){
         currentCoordinate++;
     }
 }
+
 void Position::cleanMapFirst(void){
     //Find where coordinates are sandwiched between identical coordinates
         //find identical coordinates that are not next to eachother
@@ -170,7 +173,7 @@ void Position::UpdatePose(float measured_speed_left, float measured_speed_right)
         //PrintPose();
 }
 
-//untested
+//untested depricated
 void Position::restOdomytry(){
     float heading = getThetaDeg();
     
