@@ -7,11 +7,11 @@
 class SpeedController: public Position
 {
     private:
-        const float Kp = 0.5; //Adapt the parameters until your robot moves at the speed you command it to drive
+        const float Kp = 0.5;
         const float Ki = 0.2; 
         float E_left = 0; 
         float E_right = 0;
-        int counts = 8; //assignment
+        int counts = 8; 
 
     public:
         void Init(void);

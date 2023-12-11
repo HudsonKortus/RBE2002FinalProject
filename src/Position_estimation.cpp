@@ -100,7 +100,7 @@ void Position::UpdatePose(float measured_speed_left, float measured_speed_right)
         x = x_calculated;
         y = y_calculated;
         theta = theta_calculated;
-        PrintPose();
+        //PrintPose();
 }
 
 //untested
@@ -112,18 +112,25 @@ void Position::restOdomytry(){
     Serial.println(heading);
     //0 degree case
     if (heading > 345 || heading < 15){
-        Serial.print("0 degree case");
+            Serial.print("0 degree case");
+            waypoint[waypoiontCounter][0] ++;
+            waypoiontCounter++;
     }
     //90 degree case
     else if (heading > 75 && heading < 105){
-        Serial.print("90 degree case");
+        waypoint[waypoiontCounter][1] ++;
+            waypoiontCounter++;    
     }
     // 180 degree case
     else if (heading > 165 && heading < 195){
+        waypoint[waypoiontCounter][0] --;
+        waypoiontCounter++;  
         Serial.print("180 degree case");
     }
     //270 degree case
     else if (heading > 255 && heading < 285){
+        waypoint[waypoiontCounter][1] --;
+        waypoiontCounter++;  
         Serial.print("270 degree case");
     }
     else{

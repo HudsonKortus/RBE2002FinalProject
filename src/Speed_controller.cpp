@@ -5,14 +5,13 @@
 
 Romi32U4Motors motors;
 
-Encoder MagneticEncoder; 
-Position odometry;
-Position theoretical;
+//Encoder MagneticEncoder; 
+//Position odometry;
+//Position theoretical;
 
 void SpeedController::Init(void)
 {
-    MagneticEncoder.Init();
-    odometry.Init();
+ 
 }
 void SpeedController::setEfforts(int left, int right)
 {
@@ -20,10 +19,13 @@ void SpeedController::setEfforts(int left, int right)
 }
 
 void SpeedController::Run(float target_velocity_left, float target_velocity_right)
-{
-        float e_left = target_velocity_left - MagneticEncoder.ReadVelocityLeft();
-        float e_right = target_velocity_right - MagneticEncoder.ReadVelocityRight();
-
+{       
+        //UpdateEncoderCounts();
+        float e_left = target_velocity_left - ReadVelocityLeft();
+        float e_right = target_velocity_right - ReadVelocityRight();
+        Serial.print("ReadVelocityLeft()");
+        Serial.println(ReadVelocityLeft());
+        Serial.println(" ");
         E_left += e_left;
         E_right += e_right;
 
@@ -31,20 +33,19 @@ void SpeedController::Run(float target_velocity_left, float target_velocity_righ
         float u_right = Kp*e_right + Ki*E_right;
 
         motors.setEfforts(u_left,u_right);
-        odometry.UpdatePose(MagneticEncoder.ReadVelocityLeft(), 
-            MagneticEncoder.ReadVelocityRight()); //this is where your newly programmed function is/will be called
+        
 }
 
 boolean SpeedController::Turn(int degree, int direction)
 {
     motors.setEfforts(0, 0);
-    int turns = counts*(degree); //assignment 1: convert degree into counts
-    int count_turn = MagneticEncoder.ReadEncoderCountLeft();
+    int turns = counts*(degree);
+    int count_turn = ReadEncoderCountLeft();
 
-    while(abs(abs(count_turn) - abs(MagneticEncoder.ReadEncoderCountLeft())) <= turns)
-    {
-        if(!direction) Run(50,-50);
-        else Run(-50,50);
+    while(abs(abs(count_turn) - abs(ReadEncoderCountLeft())) <= turns)
+    {      
+        UpdateEncoderCounts();
+        setEfforts(-(direction*50),(direction*50));        
     }
     motors.setEfforts(0, 0);
     return 1;
@@ -53,10 +54,13 @@ boolean SpeedController::Turn(int degree, int direction)
 boolean SpeedController::Straight(int target_velocity, int time) //in mm/s and s
 {
     motors.setEfforts(0, 0);
+    Serial.println(target_velocity);
+    delay(1000);
     unsigned long now = millis();
-
     while ((unsigned long)(millis() - now) <= time*1000){
-        Run(target_velocity,target_velocity);
+        if(UpdateEncoderCounts()){
+            Run(target_velocity,target_velocity);
+        }
     }
     motors.setEfforts(0, 0);
 
@@ -79,6 +83,7 @@ boolean SpeedController::Curved(int target_velocity_left, int target_velocity_ri
 void SpeedController::Stop()
 {
     motors.setEfforts(0,0);
-    odometry.Stop();
 }
+
+
 
