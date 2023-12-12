@@ -14,7 +14,7 @@ Encoder RomiEncoders;
 unsigned long time_prev = 0;
 unsigned long time_now = millis();
 float timeIncrement = 0.050;
-const int coordinateListSize = 27;
+const int coordinateListSize = 54;
 int currentCoordinate = 0;
 bool second = false;
 
@@ -23,7 +23,7 @@ struct coordinates{
     float xCoords[coordinateListSize];
     float yCoords[coordinateListSize];
 };
-coordinates firstSet;
+coordinates myCoordinates;
 
 void Position::Init(void)
 {
@@ -35,23 +35,12 @@ void Position::Init(void)
 
 }
 void Position::makeWaypoint(void){
-    if(currentCoordinate < 27){
-        firstSet.xCoords[currentCoordinate] = x;
-        firstSet.yCoords[currentCoordinate] = y;
-        currentCoordinate++;
-    }else if(coordinateListSize == 27){
-        coordinateListSize *= 2;
-        coordinates secondSet;
-        for(int i = 0; i <= 26; i++){
-            secondSet.xCoords[i] = firstSet.xCoords[i];
-            secondSet.yCoords[i] = firstSet.yCoords[i];
-        }
-        second = true;
-    }else{
-        secondSet.xCoords[currentCoordinate] = x;
-        secondSet.yCoords[currentCoordinate] = y;
+    if(currentCoordinate < coordinateListSize){
+        myCoordinates.xCoords[currentCoordinate] = x;
+        myCoordinates.yCoords[currentCoordinate] = y;
         currentCoordinate++;
     }
+
 }
 
 void Position::cleanMapFirst(void){
@@ -61,31 +50,15 @@ void Position::cleanMapFirst(void){
     for(int i = 0; i < --currentCoordinate; i++){
         for(int j = ++i; j < currentCoordinate; j++){
             //Check for bread of sandwich
-            if(firstSet.xCoords[i] == firstSet.xCoords[j] && firstSet.yCoords[i] == firstSet.yCoords[j]){
+            if(myCoordinates.xCoords[i] == myCoordinates.xCoords[j] 
+                && myCoordinates.yCoords[i] == myCoordinates.yCoords[j]){
                 for(int a = i; a < j; a++){
-                    firstSet.xCoords[a] = firstSet.xCoords[i];
-                    firstSet.yCoords[a] = firstSet.yCoords[i];
+                    myCoordinates.xCoords[a] = myCoordinates.xCoords[i];
+                    myCoordinates.yCoords[a] = myCoordinates.yCoords[i];
                 }
             }
         }
     }
-}
-void Position::cleanMapSecond(void){
-    //Find where coordinates are sandwiched between identical coordinates
-        //find identical coordinates that are not next to eachother
-        //replace the coordinates in between them with that coordinate (this is easier than deleting and redoing the map)
-    for(int i = 0; i < --currentCoordinate; i++){
-        for(int j = ++i; j < currentCoordinate; j++){
-            //Check for bread of sandwich
-            if(secondSet.xCoords[i] == secondSet.xCoords[j] && secondSet.yCoords[i] == secondSet.yCoords[j]){
-                for(int a = i; a < j; a++){
-                    secondSet.xCoords[a] = secondSet.xCoords[i];
-                    secondSet.yCoords[a] = secondSet.yCoords[i];
-                }
-            }
-        }
-    }
-
 }
 
 void Position::Stop(void)
@@ -119,12 +92,12 @@ float Position::getThetaDeg()
 
 void Position::PrintPose(void)
 {
-    Serial.print(x);
-    Serial.print("  ");
-    Serial.print(y);
-    Serial.print("  ");
-    Serial.print(theta);
-    Serial.print(" ");
+    // Serial.print(x);
+    // Serial.print("  ");
+    // Serial.print(y);
+    // Serial.print("  ");
+    // Serial.print(theta);
+    // Serial.print(" ");
 //     Serial.print("|");
 //     Serial.print(" ");
 //     Serial.print(x_theoretical);
@@ -134,11 +107,12 @@ void Position::PrintPose(void)
 //     Serial.println(theta_theoretical);
 }
 
-void Position::UpdatePose(float measured_speed_left, float measured_speed_right) //target speed in mm/s
+void Position::UpdatePose(float measured_speed_left, 
+    float measured_speed_right) //target speed in mm/s
 {
         time_prev = millis();
          if(abs(measured_speed_right - measured_speed_left) > .25 ) {
-            Serial.println("Curved");
+            //Serial.println("Curved");
            //measured calculations
             float R_measured = (l/2)*((measured_speed_right + measured_speed_left) 
                 / (measured_speed_right - measured_speed_left));
@@ -155,7 +129,7 @@ void Position::UpdatePose(float measured_speed_left, float measured_speed_right)
 
         } else {
             //straight movement
-            Serial.println("Straight");
+            //Serial.println("Straight");
 
             //measured calculations
             float V_calculated = (measured_speed_left + measured_speed_right)/2;
@@ -166,7 +140,10 @@ void Position::UpdatePose(float measured_speed_left, float measured_speed_right)
 
         if(theta_calculated > 2*PI){
             theta_calculated -= 2*PI;
+        }else if(theta_calculated < 0){
+            theta_calculated += 2*PI;
         }
+
         x = x_calculated;
         y = y_calculated;
         theta = theta_calculated;
@@ -174,7 +151,7 @@ void Position::UpdatePose(float measured_speed_left, float measured_speed_right)
 }
 
 //untested depricated
-void Position::restOdomytry(){
+void Position::resetOdomytry(){
     float heading = getThetaDeg();
     
     Serial.print("heading");
@@ -183,30 +160,49 @@ void Position::restOdomytry(){
     //0 degree case
     if (heading > 345 || heading < 15){
             Serial.print("0 degree case");
-            waypoint[waypoiontCounter][0] ++;
-            waypoiontCounter++;
+            currentCoordinate++;
+            myCoordinates.xCoords[currentCoordinate] = 
+            myCoordinates.xCoords[currentCoordinate-1]+1;
+            myCoordinates.yCoords[currentCoordinate] = 
+            myCoordinates.yCoords[--currentCoordinate];
     }
     //90 degree case
     else if (heading > 75 && heading < 105){
-        waypoint[waypoiontCounter][1] ++;
-            waypoiontCounter++;    
+            currentCoordinate++;
+            myCoordinates.yCoords[currentCoordinate] = 
+            myCoordinates.yCoords[currentCoordinate-1]+1;
+            myCoordinates.xCoords[currentCoordinate] = 
+            myCoordinates.xCoords[--currentCoordinate];
     }
     // 180 degree case
     else if (heading > 165 && heading < 195){
-        waypoint[waypoiontCounter][0] --;
-        waypoiontCounter++;  
+            currentCoordinate++;
+            myCoordinates.xCoords[currentCoordinate] = 
+            myCoordinates.xCoords[currentCoordinate-1]-1;
+            myCoordinates.yCoords[currentCoordinate] = 
+            myCoordinates.yCoords[--currentCoordinate];
         Serial.print("180 degree case");
     }
     //270 degree case
     else if (heading > 255 && heading < 285){
-        waypoint[waypoiontCounter][1] --;
-        waypoiontCounter++;  
+            currentCoordinate++;
+            /*
+            currentCoordinate = 2
+            yCoords[2] = yCoords[1] - 1 = 0 - 1 = -1
+            xCoords[2] = xCoords[1] = 0
+            */
+            myCoordinates.yCoords[currentCoordinate] = 
+            myCoordinates.yCoords[currentCoordinate-1]-1;
+            myCoordinates.xCoords[currentCoordinate] = 
+            myCoordinates.xCoords[--currentCoordinate];
         Serial.print("270 degree case");
     }
     else{
-        Serial.print("error");
+        Serial.print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<___________________error_________________>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
     }
-
+        Serial.print(myCoordinates.xCoords[currentCoordinate]);
+        Serial.print(" ");
+        Serial.println(myCoordinates.yCoords[currentCoordinate]);
 
   //always orent the robot with x facing x+
 //increment world waypoint counter

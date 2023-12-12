@@ -9,9 +9,9 @@ void LineFollow::lineFollow(float baseSpeed)
 {
   long left = analogRead(LEFT_LINE_SENSOR_PIN);   // read the left line sensor
   long right = analogRead(RIGHT_LINE_SENSOR_PIN); // read the right line sensor
-  Serial.println(left);
-  Serial.println(right);
-  Serial.println("");
+//   Serial.println(left);
+//   Serial.println(right);
+//   Serial.println("");
   int16_t reflectanceError = left - right;   // calculate the reflectance error
   float effort = kp_line * reflectanceError; // calculate the line effort
 
@@ -40,15 +40,15 @@ bool LineFollow::turnToNextline(float baseSpeed){
   long left = analogRead(LEFT_LINE_SENSOR_PIN);   // read the left line sensor
   long right = analogRead(RIGHT_LINE_SENSOR_PIN);
 
-  Serial.println(left);
+  //Serial.println(left);
 //   if((baseSpeed < 0 && right < REFLECTANCE_THRESHOLD) || 
 //       (baseSpeed > 0 && left < REFLECTANCE_THRESHOLD)){
     if(right < REFLECTANCE_THRESHOLD || left < REFLECTANCE_THRESHOLD){
-    Stop();
-    return true;
-  } else {
-    return false;
-  }
+        Stop();
+        return true;
+    } else {
+        return false;
+    }
 }
 
 //***blocking****

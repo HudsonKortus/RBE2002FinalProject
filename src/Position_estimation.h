@@ -38,10 +38,7 @@ class Position : public Encoder
         void Stop(void);
         void makeWaypoint(void);
         void cleanMapFirst(void);
-        void cleanMapSecond(void);
-
-        void makeWaypoint();
-        void restOdomytry(void);
+        void resetOdomytry(void);
 };
 
 #endif

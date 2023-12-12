@@ -23,9 +23,9 @@ void SpeedController::Run(float target_velocity_left, float target_velocity_righ
         //UpdateEncoderCounts();
         float e_left = target_velocity_left - ReadVelocityLeft();
         float e_right = target_velocity_right - ReadVelocityRight();
-        Serial.print("ReadVelocityLeft()");
-        Serial.println(ReadVelocityLeft());
-        Serial.println(" ");
+        // Serial.print("ReadVelocityLeft()");
+        // Serial.println(ReadVelocityLeft());
+        // Serial.println(" ");
         E_left += e_left;
         E_right += e_right;
 
@@ -44,8 +44,12 @@ boolean SpeedController::Turn(int degree, int direction)
 
     while(abs(abs(count_turn) - abs(ReadEncoderCountLeft())) <= turns)
     {      
-        UpdateEncoderCounts();
-        setEfforts(-(direction*50),(direction*50));        
+        setEfforts(-(direction*50),(direction*50));  
+        if(UpdateEncoderCounts()){
+        UpdatePose(ReadVelocityLeft(), ReadVelocityRight());
+        //Serial.println("loopiong infinetly");
+        }
+      
     }
     motors.setEfforts(0, 0);
     return 1;
@@ -54,7 +58,7 @@ boolean SpeedController::Turn(int degree, int direction)
 boolean SpeedController::Straight(int target_velocity, int time) //in mm/s and s
 {
     motors.setEfforts(0, 0);
-    Serial.println(target_velocity);
+    //Serial.println(target_velocity);
     delay(1000);
     unsigned long now = millis();
     while ((unsigned long)(millis() - now) <= time*1000){

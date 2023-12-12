@@ -10,7 +10,7 @@ class LineFollow: public SpeedController
     private:
         int LEFT_LINE_SENSOR_PIN = 21;
         int RIGHT_LINE_SENSOR_PIN = 22;
-        const float kp_line = 0.015;             // line following kp
+        const float kp_line = 0.025;             // line following kp
         const float REFLECTANCE_THRESHOLD = 200;
         const float VTC_TO_CENTER = 100;//mm
 

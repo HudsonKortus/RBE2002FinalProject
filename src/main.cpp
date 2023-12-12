@@ -32,10 +32,9 @@ void setup() {
 
 void loop() {
   //positionEstimation.Run();
-
-
   if(robot.UpdateEncoderCounts()){
-      robot.UpdatePose(robot.ReadVelocityLeft(), robot.ReadVelocityRight());
+    robot.UpdatePose(robot.ReadVelocityLeft(), robot.ReadVelocityRight());
+    //Serial.println(robot.getThetaDeg());
     switch(robot_state){
       case IDLE:
 
@@ -46,11 +45,15 @@ void loop() {
 
         case DRIVE_LINE:
           if(robot.reachedIntersection()){
-            //robot.makeWaypoint();
+            robot.makeWaypoint();
             robot.centerVTC();
+            robot.resetOdomytry();
             robot_state = TURN;
           }else{
             robot.lineFollow(45);
+          }
+          if(buttonA.getSingleDebouncedRelease()){
+            robot_state = DRIVE_LINE;
           }
         break;
 
