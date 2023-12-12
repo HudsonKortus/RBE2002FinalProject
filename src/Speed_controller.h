@@ -14,7 +14,6 @@ class SpeedController: public Position
         int counts = 8; 
 
     public:
-        void Init(void);
         void Run(float, float); //speed left, speed right
         boolean Turn(int,int); //degrees, direction of rotation: 0->left, 1->right
         boolean Straight(int, int); //speed, duration
