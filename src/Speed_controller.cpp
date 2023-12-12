@@ -9,10 +9,6 @@ Romi32U4Motors motors;
 //Position odometry;
 //Position theoretical;
 
-void SpeedController::Init(void)
-{
- 
-}
 void SpeedController::setEfforts(int left, int right)
 {
     motors.setEfforts(left, right);

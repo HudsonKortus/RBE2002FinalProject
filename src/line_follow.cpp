@@ -3,7 +3,7 @@
 #include "Encoders.h"
 #include "Speed_controller.h"
 #include "line_follow.h"
-
+bool first = true;
 // line follow function - tested - works
 void LineFollow::lineFollow(float baseSpeed) 
 {
@@ -33,8 +33,10 @@ bool LineFollow::reachedIntersection(){
 
 //tested works
 bool LineFollow::turnToNextline(float baseSpeed){
-
-  Turn(20,(baseSpeed/abs(baseSpeed)));
+  if(first){
+    Turn(30,(baseSpeed/abs(baseSpeed)));
+    first = false;
+  }
 
   setEfforts(-baseSpeed, baseSpeed); // set motor speed
   long left = analogRead(LEFT_LINE_SENSOR_PIN);   // read the left line sensor
@@ -45,6 +47,7 @@ bool LineFollow::turnToNextline(float baseSpeed){
 //       (baseSpeed > 0 && left < REFLECTANCE_THRESHOLD)){
     if(right < REFLECTANCE_THRESHOLD || left < REFLECTANCE_THRESHOLD){
         Stop();
+        first = true;
         return true;
     } else {
         return false;

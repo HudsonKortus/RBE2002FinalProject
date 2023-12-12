@@ -29,6 +29,7 @@ class Position : public Encoder
         };
         void Init(void);
         void UpdatePose(float,float);
+        void printMap(void);
         //void UpdatePose(float,float,float,float);
         float getX(void);
         float getY(void);

@@ -20,8 +20,8 @@ bool second = false;
 
 //Based on how things are run right now, we can go up to 54 coordinates
 struct coordinates{
-    float xCoords[coordinateListSize];
-    float yCoords[coordinateListSize];
+    float xCoords[coordinateListSize] = {0};
+    float yCoords[coordinateListSize] = {0};
 };
 coordinates myCoordinates;
 
@@ -31,8 +31,9 @@ void Position::Init(void)
     x = 0;
     y = 0;
     theta = 0;
-
-
+    myCoordinates.xCoords[currentCoordinate] = 0;
+    myCoordinates.yCoords[currentCoordinate] = 0;
+    currentCoordinate++;
 }
 void Position::makeWaypoint(void){
     if(currentCoordinate < coordinateListSize){
@@ -47,7 +48,7 @@ void Position::cleanMapFirst(void){
     //Find where coordinates are sandwiched between identical coordinates
         //find identical coordinates that are not next to eachother
         //replace the coordinates in between them with that coordinate (this is easier than deleting and redoing the map)
-    for(int i = 0; i < --currentCoordinate; i++){
+    for(int i = 0; i < currentCoordinate-1; i++){
         for(int j = ++i; j < currentCoordinate; j++){
             //Check for bread of sandwich
             if(myCoordinates.xCoords[i] == myCoordinates.xCoords[j] 
@@ -60,7 +61,14 @@ void Position::cleanMapFirst(void){
         }
     }
 }
-
+void Position::printMap(void){
+    Serial.println("THE MAP OH MY GOD");
+    for(int i = 0; i < currentCoordinate; i++){
+        Serial.print(myCoordinates.xCoords[i]);
+        Serial.print("  ");
+        Serial.println(myCoordinates.yCoords[i]);
+    }
+}
 void Position::Stop(void)
 {
     time_now = millis();
@@ -157,52 +165,90 @@ void Position::resetOdomytry(){
     Serial.print("heading");
 
     Serial.println(heading);
+
     //0 degree case
-    if (heading > 345 || heading < 15){
+    if (heading > 315 || heading < 45){
             Serial.print("0 degree case");
-            currentCoordinate++;
+                        Serial.print("Current Coordinate: ");
+            Serial.println(currentCoordinate);
+            Serial.print("Old Coordinates: (x,y) ");
+            Serial.print(myCoordinates.xCoords[currentCoordinate]);
+            Serial.print("  ");
+            Serial.println(myCoordinates.yCoords[currentCoordinate]);
             myCoordinates.xCoords[currentCoordinate] = 
             myCoordinates.xCoords[currentCoordinate-1]+1;
             myCoordinates.yCoords[currentCoordinate] = 
-            myCoordinates.yCoords[--currentCoordinate];
+            myCoordinates.yCoords[currentCoordinate-1];
+                        Serial.print("Current Coordinate: ");
+            Serial.println(currentCoordinate);
+            Serial.print("New Coordinates: (x,y) ");
+            Serial.print(myCoordinates.xCoords[currentCoordinate]);
+            Serial.print("  ");
+            Serial.println(myCoordinates.yCoords[currentCoordinate]);
     }
     //90 degree case
-    else if (heading > 75 && heading < 105){
-            currentCoordinate++;
+    else if (heading > 45 && heading < 135){
+                    Serial.print("Current Coordinate: ");
+            Serial.println(currentCoordinate);
+            Serial.print("Old Coordinates: (x,y) ");
+            Serial.print(myCoordinates.xCoords[currentCoordinate]);
+            Serial.print("  ");
+            Serial.println(myCoordinates.yCoords[currentCoordinate]);
             myCoordinates.yCoords[currentCoordinate] = 
             myCoordinates.yCoords[currentCoordinate-1]+1;
             myCoordinates.xCoords[currentCoordinate] = 
-            myCoordinates.xCoords[--currentCoordinate];
+            myCoordinates.xCoords[currentCoordinate-1];
+                        Serial.print("Current Coordinate: ");
+            Serial.println(currentCoordinate);
+            Serial.print("New Coordinates: (x,y) ");
+            Serial.print(myCoordinates.xCoords[currentCoordinate]);
+            Serial.print("  ");
+            Serial.println(myCoordinates.yCoords[currentCoordinate]);
     }
     // 180 degree case
-    else if (heading > 165 && heading < 195){
-            currentCoordinate++;
+    else if (heading > 135 && heading < 225){
+                    Serial.print("Current Coordinate: ");
+            Serial.println(currentCoordinate);
+            Serial.print("Old Coordinates: (x,y) ");
+            Serial.print(myCoordinates.xCoords[currentCoordinate]);
+            Serial.print("  ");
+            Serial.println(myCoordinates.yCoords[currentCoordinate]);
             myCoordinates.xCoords[currentCoordinate] = 
             myCoordinates.xCoords[currentCoordinate-1]-1;
             myCoordinates.yCoords[currentCoordinate] = 
-            myCoordinates.yCoords[--currentCoordinate];
+            myCoordinates.yCoords[currentCoordinate-1];
+                        Serial.print("Current Coordinate: ");
+            Serial.println(currentCoordinate);
+            Serial.print("New Coordinates: (x,y) ");
+            Serial.print(myCoordinates.xCoords[currentCoordinate]);
+            Serial.print("  ");
+            Serial.println(myCoordinates.yCoords[currentCoordinate]);
         Serial.print("180 degree case");
     }
     //270 degree case
-    else if (heading > 255 && heading < 285){
-            currentCoordinate++;
-            /*
-            currentCoordinate = 2
-            yCoords[2] = yCoords[1] - 1 = 0 - 1 = -1
-            xCoords[2] = xCoords[1] = 0
-            */
-            myCoordinates.yCoords[currentCoordinate] = 
-            myCoordinates.yCoords[currentCoordinate-1]-1;
-            myCoordinates.xCoords[currentCoordinate] = 
-            myCoordinates.xCoords[--currentCoordinate];
+    else if (heading > 225 && heading < 315){
+            Serial.print("Current Coordinate: ");
+            Serial.println(currentCoordinate);
+            Serial.print("Old Coordinates: (x,y) ");
+            Serial.print(myCoordinates.xCoords[currentCoordinate]);
+            Serial.print("  ");
+            Serial.println(myCoordinates.yCoords[currentCoordinate]);
+            myCoordinates.yCoords[currentCoordinate] = myCoordinates.yCoords[currentCoordinate-1]-1;
+            myCoordinates.xCoords[currentCoordinate] = myCoordinates.xCoords[currentCoordinate-1];
+            Serial.print("Current Coordinate: ");
+            Serial.println(currentCoordinate);
+            Serial.print("New Coordinates: (x,y) ");
+            Serial.print(myCoordinates.xCoords[currentCoordinate]);
+            Serial.print("  ");
+            Serial.println(myCoordinates.yCoords[currentCoordinate]);
         Serial.print("270 degree case");
     }
     else{
         Serial.print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<___________________error_________________>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
     }
-        Serial.print(myCoordinates.xCoords[currentCoordinate]);
-        Serial.print(" ");
-        Serial.println(myCoordinates.yCoords[currentCoordinate]);
+    
+    currentCoordinate++;
+
 
   //always orent the robot with x facing x+
 //increment world waypoint counter
