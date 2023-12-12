@@ -1,8 +1,10 @@
 #include <Arduino.h>
 //#include "Behaviors.h"
 #include "Speed_controller.h"
+#include <Rangefinder.h>
+#include "Apriltags.h"
 #include "line_follow.h"
-//#include <Rangefinder.h>
+
 
 //Behaviors positionEstimation;
 //this is a test can you see what I am typing
@@ -18,10 +20,25 @@ ROBOT_STATE robot_state = IDLE; //initial state: IDLE
 //Rangefinder rangefinder(17, 30);
 const float TOO_CLOSE = 9; //cm
 
+//For apriltags:
+AprilTags ap_finder;
+
 void setup() {
   //positionEstimation.Init();
   //robot.Init();
-  //rangefinder.init();
+
+  rangefinder.init();
+  ap_finder.Init();
+}
+
+//for verifying correct april tag:
+//input the id you want it to be.
+bool correct_tag(int id) {
+  if(ap_finder.FindAPs() == id) {
+    return true;
+  }
+  return false;
+
 }
 
 
