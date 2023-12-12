@@ -4,6 +4,7 @@
 #include <Romi32U4.h>
 #include <Encoders.h>
 
+
 class Position : public Encoder
 
 {
@@ -17,6 +18,8 @@ class Position : public Encoder
         float x = 0;
         float y = 0;
         float theta = 0;
+        float waypoint[18][2];
+        int waypoiontCounter;
 
     public:
         struct pose_data {
@@ -27,13 +30,15 @@ class Position : public Encoder
         void Init(void);
         void UpdatePose(float,float);
         //void UpdatePose(float,float,float,float);
-        float getX();
-        float getY();
-        float getTheta();
-        float getThetaDeg();
+        float getX(void);
+        float getY(void);
+        float getTheta(void);
+        float getThetaDeg(void);
         void PrintPose(void);
         void Stop(void);
-        void makeWaypoint();
+        void makeWaypoint(void);
+        void cleanMapFirst(void);
+        void resetOdomytry(void);
 };
 
 #endif

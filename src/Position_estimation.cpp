@@ -1,5 +1,12 @@
 #include  "Position_estimation.h"
 #include "Encoders.h"
+
+/**
+    Arrays of x and y, when there are coordinates smooshed between others we will set those in between ones to the outside ones
+    {1,2},{1,3},{1,2} means that {1,3} is a dead end, so we will change this to {1,2},{1,2},{1,2}
+*/
+Encoder RomiEncoders;
+
 /*
     Use arrays for x and y, then repeat the last real coordinate when we delete dead ends. Double the size of the array when it 
     gets too big
@@ -7,6 +14,16 @@
 unsigned long time_prev = 0;
 unsigned long time_now = millis();
 float timeIncrement = 0.050;
+const int coordinateListSize = 54;
+int currentCoordinate = 0;
+bool second = false;
+
+//Based on how things are run right now, we can go up to 54 coordinates
+struct coordinates{
+    float xCoords[coordinateListSize];
+    float yCoords[coordinateListSize];
+};
+coordinates myCoordinates;
 
 void Position::Init(void)
 {
@@ -14,6 +31,34 @@ void Position::Init(void)
     x = 0;
     y = 0;
     theta = 0;
+
+
+}
+void Position::makeWaypoint(void){
+    if(currentCoordinate < coordinateListSize){
+        myCoordinates.xCoords[currentCoordinate] = x;
+        myCoordinates.yCoords[currentCoordinate] = y;
+        currentCoordinate++;
+    }
+
+}
+
+void Position::cleanMapFirst(void){
+    //Find where coordinates are sandwiched between identical coordinates
+        //find identical coordinates that are not next to eachother
+        //replace the coordinates in between them with that coordinate (this is easier than deleting and redoing the map)
+    for(int i = 0; i < --currentCoordinate; i++){
+        for(int j = ++i; j < currentCoordinate; j++){
+            //Check for bread of sandwich
+            if(myCoordinates.xCoords[i] == myCoordinates.xCoords[j] 
+                && myCoordinates.yCoords[i] == myCoordinates.yCoords[j]){
+                for(int a = i; a < j; a++){
+                    myCoordinates.xCoords[a] = myCoordinates.xCoords[i];
+                    myCoordinates.yCoords[a] = myCoordinates.yCoords[i];
+                }
+            }
+        }
+    }
 }
 
 void Position::Stop(void)
@@ -41,18 +86,18 @@ float Position::getTheta()
 
 float Position::getThetaDeg()
 {
-    return theta;
+    return theta*(180/PI);
 }
 
 
 void Position::PrintPose(void)
 {
-    Serial.print(x);
-    Serial.print("  ");
-    Serial.print(y);
-    Serial.print("  ");
-    Serial.print(theta);
-    Serial.print(" ");
+    // Serial.print(x);
+    // Serial.print("  ");
+    // Serial.print(y);
+    // Serial.print("  ");
+    // Serial.print(theta);
+    // Serial.print(" ");
 //     Serial.print("|");
 //     Serial.print(" ");
 //     Serial.print(x_theoretical);
@@ -62,33 +107,13 @@ void Position::PrintPose(void)
 //     Serial.println(theta_theoretical);
 }
 
-void Position::UpdatePose(float measured_speed_left, float measured_speed_right) //target speed in mm/s
+void Position::UpdatePose(float measured_speed_left, 
+    float measured_speed_right) //target speed in mm/s
 {
-    //Serial.println(millis() - time_prev);
         time_prev = millis();
-        //assignment
-   
-        // if(theoretical_speed_right != theoretical_speed_left 
-        //     && abs(measured_speed_right - measured_speed_left) > .1 ) {
-            //curved movement
          if(abs(measured_speed_right - measured_speed_left) > .25 ) {
-            Serial.println("Curved");
-
-            // //target calculations
-            // float R_theoretical = (l/2)*((theoretical_speed_right + theoretical_speed_left) 
-            //     / (theoretical_speed_right - theoretical_speed_left));
-            // float w_theoretical = (theoretical_speed_right - theoretical_speed_left) / l;
-            
-
-            // x_theoretical = x_theoretical + ((-R_theoretical * sin(theta_theoretical)) + 
-            //     (R_theoretical * sin((theta_theoretical + (w_theoretical * timeIncrement)))));
-            
-            // y_theoretical += (R_theoretical * cos(theta_theoretical)) - 
-            //     (R_theoretical * cos(theta_theoretical + (w_theoretical * timeIncrement)));
-
-            // theta_theoretical += (w_theoretical * timeIncrement);
-
-            //measured calculations
+            //Serial.println("Curved");
+           //measured calculations
             float R_measured = (l/2)*((measured_speed_right + measured_speed_left) 
                 / (measured_speed_right - measured_speed_left));
             float w_measured = (measured_speed_right - measured_speed_left) / l;
@@ -104,22 +129,87 @@ void Position::UpdatePose(float measured_speed_left, float measured_speed_right)
 
         } else {
             //straight movement
-            Serial.println("Straight");
+            //Serial.println("Straight");
 
-            // //target calculations
-            // float V_theoretical = (theoretical_speed_left + theoretical_speed_right)/2;
-            // x_theoretical += V_theoretical * cos(theta_theoretical) * timeIncrement; //50ms is the set time update
-            // y_theoretical += V_theoretical * sin(theta_theoretical) * timeIncrement;
-            // //theta stays the same
-            
             //measured calculations
             float V_calculated = (measured_speed_left + measured_speed_right)/2;
             x_calculated += V_calculated * cos(theta_calculated) * timeIncrement; //50ms is the set time update
             y_calculated += V_calculated * sin(theta_calculated) * timeIncrement;
             
         }
+
+        if(theta_calculated > 2*PI){
+            theta_calculated -= 2*PI;
+        }else if(theta_calculated < 0){
+            theta_calculated += 2*PI;
+        }
+
         x = x_calculated;
         y = y_calculated;
         theta = theta_calculated;
-        PrintPose();
+        //PrintPose();
+}
+
+//untested depricated
+void Position::resetOdomytry(){
+    float heading = getThetaDeg();
+    
+    Serial.print("heading");
+
+    Serial.println(heading);
+    //0 degree case
+    if (heading > 345 || heading < 15){
+            Serial.print("0 degree case");
+            currentCoordinate++;
+            myCoordinates.xCoords[currentCoordinate] = 
+            myCoordinates.xCoords[currentCoordinate-1]+1;
+            myCoordinates.yCoords[currentCoordinate] = 
+            myCoordinates.yCoords[--currentCoordinate];
+    }
+    //90 degree case
+    else if (heading > 75 && heading < 105){
+            currentCoordinate++;
+            myCoordinates.yCoords[currentCoordinate] = 
+            myCoordinates.yCoords[currentCoordinate-1]+1;
+            myCoordinates.xCoords[currentCoordinate] = 
+            myCoordinates.xCoords[--currentCoordinate];
+    }
+    // 180 degree case
+    else if (heading > 165 && heading < 195){
+            currentCoordinate++;
+            myCoordinates.xCoords[currentCoordinate] = 
+            myCoordinates.xCoords[currentCoordinate-1]-1;
+            myCoordinates.yCoords[currentCoordinate] = 
+            myCoordinates.yCoords[--currentCoordinate];
+        Serial.print("180 degree case");
+    }
+    //270 degree case
+    else if (heading > 255 && heading < 285){
+            currentCoordinate++;
+            /*
+            currentCoordinate = 2
+            yCoords[2] = yCoords[1] - 1 = 0 - 1 = -1
+            xCoords[2] = xCoords[1] = 0
+            */
+            myCoordinates.yCoords[currentCoordinate] = 
+            myCoordinates.yCoords[currentCoordinate-1]-1;
+            myCoordinates.xCoords[currentCoordinate] = 
+            myCoordinates.xCoords[--currentCoordinate];
+        Serial.print("270 degree case");
+    }
+    else{
+        Serial.print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<___________________error_________________>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+    }
+        Serial.print(myCoordinates.xCoords[currentCoordinate]);
+        Serial.print(" ");
+        Serial.println(myCoordinates.yCoords[currentCoordinate]);
+
+  //always orent the robot with x facing x+
+//increment world waypoint counter
+// if we are at 0, increment x by 1
+// if we are at 90, increment y by 1
+//if we are at 180, decrement x by 1
+//if we are at 270, decrement y by 1 
+//assume x and y unit are equivelent to 40cm -> 400mm
+  //if(robot.getTheta())
 }
